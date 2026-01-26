@@ -80,6 +80,7 @@ class CountdownTimer {
 
         engine.isPaused = false;
         playBell();
+        document.body.classList.add('orange-bg');
 
         engine.start(() => {
             engine.totalSeconds--;
@@ -94,7 +95,14 @@ class CountdownTimer {
 
             const elapsed = engine.initialSeconds - engine.totalSeconds;
 
-            if (elapsed === 60 || engine.totalSeconds === 60) {
+            // 60 detik pertama selesai → remove orange
+            if (elapsed === 60) {
+                document.body.classList.remove('orange-bg');
+            }
+
+            // Sisa 80 detik → add orange
+            if (engine.totalSeconds === 80) {
+                document.body.classList.add('orange-bg');
                 playBell();
             }
         });
@@ -151,6 +159,7 @@ class StopwatchTimer {
 
     reset() {
         engine.reset(0);
+        document.body.classList.remove('orange-bg');
     }
 }
 
