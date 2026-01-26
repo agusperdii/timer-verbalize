@@ -1,0 +1,120 @@
+/* General body styling */
+body {
+    background-color: #121212; /* Dark background for high contrast */
+    color: #FFFFFF; /* White text */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+/* Container for the timer and controls */
+.timer-container {
+    text-align: center;
+}
+
+/* Styling for the timer display */
+.timer-display {
+    font-size: 10rem; /* Large font size for visibility */
+    font-weight: bold;
+    margin-bottom: 2rem;
+}
+
+/* Styling for the control buttons */
+.controls button {
+    background-color: #1E1E1E; /* Dark gray buttons */
+    color: #FFFFFF;
+    border: 1px solid #FFFFFF;
+    padding: 1rem 2rem;
+    font-size: 1.5rem;
+    cursor: pointer;
+    margin: 0 0.5rem;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s; /* Smooth transition for hover effect */
+}
+
+/* Hover effect for buttons */
+.controls button:hover {
+    background-color: #FFFFFF;
+    color: #121212;
+}
+
+/* Styling for the time input section */
+.time-input {
+    margin-top: 2rem;
+}
+
+.time-input label {
+    font-size: 1.2rem;
+    margin-right: 0.5rem;
+}
+
+.time-input input {
+    background-color: #1E1E1E;
+    color: #FFFFFF;
+    border: 1px solid #FFFFFF;
+    padding: 0.5rem;
+    font-size: 1.2rem;
+    width: 5rem;
+    border-radius: 5px;
+}
+
+/* Responsive design for smaller screens (tablets) */
+@media (max-width: 768px) {
+    .timer-display {
+        font-size: 8rem;
+    }
+
+    .controls button {
+        font-size: 1.2rem;
+        padding: 0.8rem 1.5rem;
+    }
+}
+
+/* Responsive design for even smaller screens (mobile) */
+@media (max-width: 480px) {
+    .timer-display {
+        font-size: 5rem;
+    }
+
+    .controls button {
+        font-size: 1rem;
+        padding: 0.5rem 1rem;
+        display: block;
+        margin: 0.5rem auto;
+        width: 80%;
+    }
+
+    .time-input {
+        margin-top: 1.5rem;
+    }
+}
+
+/* Mode selection buttons */
+.mode-selection {
+    margin-bottom: 2rem;
+}
+
+.mode-btn {
+    background-color: #1E1E1E;
+    color: #FFFFFF;
+    border: 1px solid #FFFFFF;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    cursor: pointer;
+    margin: 0 0.5rem;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.mode-btn.active {
+    background-color: #FFFFFF;
+    color: #121212;
+}
+
+/* Utility class to hide elements */
+.hidden {
+    display: none;
+}
