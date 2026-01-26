@@ -6,6 +6,7 @@ const resetBtn = document.getElementById('reset-btn');
 const minutesInput = document.getElementById('minutes');
 const secondsInput = document.getElementById('seconds');
 const bellSound = document.getElementById('bell-sound');
+const overSound = document.getElementById('over-sound');
 const timerModeBtn = document.getElementById('timer-mode-btn');
 const stopwatchModeBtn = document.getElementById('stopwatch-mode-btn');
 const minutesLabel = document.getElementById('minutes-label');
@@ -28,6 +29,15 @@ function displayTime(seconds) {
 function playBell() {
     bellSound.currentTime = 0;
     bellSound.play();
+}
+function overBell() {
+    overSound.pause();
+    overSound.currentTime = 0;
+
+    const playPromise = overSound.play();
+    if (playPromise !== undefined) {
+        playPromise.catch(err => console.log('Audio blocked:', err));
+    }
 }
 
 // ================= TIMER ENGINE =================
@@ -56,6 +66,7 @@ class TimerEngine {
         this.totalSeconds = seconds;
         this.initialSeconds = seconds;
         this.isPaused = false;
+        document.body.classList.remove('orange-bg', 'red-bg');
         displayTime(seconds);
     }
 }
@@ -105,6 +116,13 @@ class CountdownTimer {
                 document.body.classList.add('orange-bg');
                 playBell();
             }
+            
+            if (engine.totalSeconds === 1) {
+                document.body.classList.remove('orange-bg');
+                document.body.classList.add('red-bg');
+                overBell();
+            }
+            
         });
     }
 
@@ -146,6 +164,12 @@ class StopwatchTimer {
                 document.body.classList.add('orange-bg');
             }
 
+            if (max > 0 && engine.totalSeconds === max - 1){
+                document.body.classList.remove('orange-bg');
+                document.body.classList.add('red-bg');
+                overBell();
+            }
+
             if (max > 0 && engine.totalSeconds >= max) {
                 engine.stop();
             }
@@ -159,7 +183,7 @@ class StopwatchTimer {
 
     reset() {
         engine.reset(0);
-        document.body.classList.remove('orange-bg');
+        document.body.classList.remove('orange-bg', 'red-bg');
     }
 }
 
