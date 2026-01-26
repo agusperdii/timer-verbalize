@@ -1,4 +1,4 @@
-// DOM Elements
+// ================= DOM =================
 const timerDisplay = document.getElementById('timer-display');
 const startBtn = document.getElementById('start-btn');
 const pauseBtn = document.getElementById('pause-btn');
@@ -8,192 +8,171 @@ const secondsInput = document.getElementById('seconds');
 const bellSound = document.getElementById('bell-sound');
 const timerModeBtn = document.getElementById('timer-mode-btn');
 const stopwatchModeBtn = document.getElementById('stopwatch-mode-btn');
-const timeInput = document.getElementById('time-input');
 const minutesLabel = document.getElementById('minutes-label');
 const secondsLabel = document.getElementById('seconds-label');
 const toggleControlsBtn = document.getElementById('toggle-controls-btn');
 const timerContainer = document.querySelector('.timer-container');
 
-let interval; // To store the setInterval instance
-let totalSeconds; // To store the current seconds for the countdown/stopwatch
-let initialTotalSeconds = 0; // Store initial time for countdown to calculate elapsed
-let isPaused = false; // To track if the timer is paused
-let currentMode = 'timer'; // 'timer' or 'stopwatch'
-let controlsHidden = false; // Track controls visibility
+// ================= GLOBAL STATE =================
+let interval = null;
+let currentMode = 'timer';
+let controlsHidden = false;
 
-/**
- * Updates the background color based on elapsed seconds.
- * @param {number} elapsedSeconds - The number of seconds passed since start.
- */
-function updateBackgroundColor(elapsedSeconds) {
-    document.body.classList.remove('orange-bg', 'red-bg');
-
-    // 0-1 minute (0-60s): Orange
-    if (elapsedSeconds >= 0 && elapsedSeconds < 60) {
-        document.body.classList.add('orange-bg');
-    }
-    // 6-7 minutes (360-420s): Orange
-    else if (elapsedSeconds >= 360 && elapsedSeconds < 420) {
-        document.body.classList.add('orange-bg');
-    }
-    // 7+ minutes (420s+): Red
-    else if (elapsedSeconds >= 420) {
-        document.body.classList.add('red-bg');
-    }
-    // 1-6 minutes: Default (no class)
-}
-
-/**
- * Updates the timer display with the given seconds.
- * @param {number} seconds - The seconds to display.
- */
+// ================= UTIL =================
 function displayTime(seconds) {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    timerDisplay.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    timerDisplay.textContent = `${m}:${s < 10 ? '0' : ''}${s}`;
 }
 
-/**
- * Starts the countdown timer.
- */
-function startCountdown() {
-    const minutes = parseInt(minutesInput.value, 10) || 0;
-    const seconds = parseInt(secondsInput.value, 10) || 0;
+function playBell() {
+    bellSound.currentTime = 0;
+    bellSound.play();
+}
 
-    if (minutes === 0 && seconds === 0) {
-        alert('Please enter a valid number of minutes or seconds.');
-        return;
+// ================= TIMER ENGINE =================
+class TimerEngine {
+    constructor() {
+        this.totalSeconds = 0;
+        this.initialSeconds = 0;
+        this.isPaused = false;
     }
 
-    if (!isPaused) {
-        totalSeconds = (minutes * 60) + seconds;
-        initialTotalSeconds = totalSeconds;
+    start(callback) {
+        if (interval) return;
+
+        interval = setInterval(() => {
+            callback();
+        }, 1000);
     }
 
-    isPaused = false;
-    
-    // Initial update
-    updateBackgroundColor(initialTotalSeconds - totalSeconds);
+    stop() {
+        clearInterval(interval);
+        interval = null;
+    }
 
-    interval = setInterval(() => {
-        totalSeconds--;
-        
-        const elapsed = initialTotalSeconds - totalSeconds;
-        updateBackgroundColor(elapsed);
+    reset(seconds = 0) {
+        this.stop();
+        this.totalSeconds = seconds;
+        this.initialSeconds = seconds;
+        this.isPaused = false;
+        displayTime(seconds);
+    }
+}
 
-        if (totalSeconds < 0) {
-            clearInterval(interval);
-            interval = null;
-            timerDisplay.textContent = '0:00';
+const engine = new TimerEngine();
+
+// ================= COUNTDOWN TIMER =================
+class CountdownTimer {
+    start() {
+        const min = +minutesInput.value || 0;
+        const sec = +secondsInput.value || 0;
+
+        if (min === 0 && sec === 0) {
+            alert('Masukkan waktu yang valid');
             return;
         }
 
-        displayTime(totalSeconds);
-
-        // Ring at 1 minute elapsed (first 60 seconds) or 1 minute remaining
-        if (elapsed === 60 || totalSeconds === 60) {
-            bellSound.currentTime = 0;
-            bellSound.play();
+        if (!engine.isPaused) {
+            engine.totalSeconds = min * 60 + sec;
+            engine.initialSeconds = engine.totalSeconds;
         }
-    }, 1000);
-}
 
-/**
- * Starts the stopwatch.
- */
-function startStopwatch() {
-    const maxMinutes = parseInt(minutesInput.value, 10) || 0;
-    const maxSeconds = parseInt(secondsInput.value, 10) || 0;
-    const maxTotalSeconds = (maxMinutes * 60) + maxSeconds;
+        engine.isPaused = false;
+        playBell();
 
-    if (!isPaused) {
-        totalSeconds = 0;
+        engine.start(() => {
+            engine.totalSeconds--;
+
+            if (engine.totalSeconds < 0) {
+                engine.stop();
+                displayTime(0);
+                return;
+            }
+
+            displayTime(engine.totalSeconds);
+
+            const elapsed = engine.initialSeconds - engine.totalSeconds;
+
+            if (elapsed === 60 || engine.totalSeconds === 60) {
+                playBell();
+            }
+        });
     }
-    isPaused = false;
-    
-    // Initial update
-    updateBackgroundColor(totalSeconds);
 
-    interval = setInterval(() => {
-        totalSeconds++;
-        displayTime(totalSeconds);
-        updateBackgroundColor(totalSeconds);
+    pause() {
+        engine.stop();
+        engine.isPaused = true;
+    }
 
-        // Ring bell at 1 minute elapsed
-        const isOneMinuteElapsed = totalSeconds === 60;
-        // Ring bell 1 minute before max time
-        const isMinuteMark = totalSeconds % 60 === 0 && totalSeconds > 0;
-
-        if (isOneMinuteElapsed || isMinuteMark) {
-            bellSound.currentTime = 0;
-            bellSound.play();
-        }
-
-        // Stop at max time
-        if (maxTotalSeconds > 0 && totalSeconds >= maxTotalSeconds) {
-            clearInterval(interval);
-            interval = null;
-        }
-
-    }, 1000);
+    reset() {
+        const min = +minutesInput.value || 0;
+        const sec = +secondsInput.value || 0;
+        engine.reset(min * 60 + sec);
+    }
 }
 
-/**
- * Main start function, decides which timer to start.
- */
+// ================= STOPWATCH =================
+class StopwatchTimer {
+    start() {
+        const maxMin = +minutesInput.value || 0;
+        const maxSec = +secondsInput.value || 0;
+        const max = maxMin * 60 + maxSec;
+
+        if (!engine.isPaused) engine.totalSeconds = 0;
+
+        engine.isPaused = false;
+        playBell();
+        document.body.classList.add('orange-bg');
+
+        engine.start(() => {
+            engine.totalSeconds++;
+            displayTime(engine.totalSeconds);
+
+            if (engine.totalSeconds === 60) {
+                playBell()
+                document.body.classList.remove('orange-bg');
+            }
+            if (max > 0 && engine.totalSeconds === max - 80){
+                playBell();
+                document.body.classList.add('orange-bg');
+            }
+
+            if (max > 0 && engine.totalSeconds >= max) {
+                engine.stop();
+            }
+        });
+    }
+
+    pause() {
+        engine.stop();
+        engine.isPaused = true;
+    }
+
+    reset() {
+        engine.reset(0);
+    }
+}
+
+const timer = new CountdownTimer();
+const stopwatch = new StopwatchTimer();
+
+// ================= MODE HANDLER =================
 function start() {
-    if (interval) {
-        return; // Timer is already running
-    }
-
-    // Play bell sound when starting
-    bellSound.currentTime = 0;
-    bellSound.play();
-
-    if (currentMode === 'timer') {
-        startCountdown();
-    } else {
-        startStopwatch();
-    }
+    currentMode === 'timer' ? timer.start() : stopwatch.start();
 }
 
-/**
- * Pauses the timer/stopwatch.
- */
 function pause() {
-    if (interval) {
-        clearInterval(interval);
-        interval = null;
-        isPaused = true;
-    }
+    currentMode === 'timer' ? timer.pause() : stopwatch.pause();
 }
 
-/**
- * Resets the timer/stopwatch to the initial value.
- */
 function reset() {
-    clearInterval(interval);
-    interval = null;
-    isPaused = false;
-    document.body.classList.remove('orange-bg', 'red-bg'); // Reset background
-
-    if (currentMode === 'timer') {
-        const minutes = parseInt(minutesInput.value, 10) || 0;
-        const seconds = parseInt(secondsInput.value, 10) || 0;
-        totalSeconds = (minutes * 60) + seconds;
-        initialTotalSeconds = totalSeconds;
-    } else {
-        totalSeconds = 0;
-    }
-    displayTime(totalSeconds);
+    currentMode === 'timer' ? timer.reset() : stopwatch.reset();
 }
 
-/**
- * Sets the current mode.
- * @param {string} mode - The mode to set ('timer' or 'stopwatch').
- */
 function setMode(mode) {
     currentMode = mode;
+
     if (mode === 'timer') {
         timerModeBtn.classList.add('active');
         stopwatchModeBtn.classList.remove('active');
@@ -205,24 +184,18 @@ function setMode(mode) {
         minutesLabel.textContent = 'Max Minutes:';
         secondsLabel.textContent = 'Max Seconds:';
     }
+
     reset();
 }
 
-/**
- * Toggles the visibility of controls.
- */
+// ================= UI =================
 function toggleControls() {
     controlsHidden = !controlsHidden;
-    if (controlsHidden) {
-        timerContainer.classList.add('controls-hidden');
-        toggleControlsBtn.textContent = 'Show Controls';
-    } else {
-        timerContainer.classList.remove('controls-hidden');
-        toggleControlsBtn.textContent = 'Hide Controls';
-    }
+    timerContainer.classList.toggle('controls-hidden');
+    toggleControlsBtn.textContent = controlsHidden ? 'Show Controls' : 'Hide Controls';
 }
 
-// Event Listeners
+// ================= EVENTS =================
 startBtn.addEventListener('click', start);
 pauseBtn.addEventListener('click', pause);
 resetBtn.addEventListener('click', reset);
@@ -232,5 +205,5 @@ timerModeBtn.addEventListener('click', () => setMode('timer'));
 stopwatchModeBtn.addEventListener('click', () => setMode('stopwatch'));
 toggleControlsBtn.addEventListener('click', toggleControls);
 
-// Initial display setup when the page loads
+// Init
 setMode('timer');
