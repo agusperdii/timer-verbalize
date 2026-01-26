@@ -122,9 +122,9 @@ function startStopwatch() {
         // Ring bell at 1 minute elapsed
         const isOneMinuteElapsed = totalSeconds === 60;
         // Ring bell 1 minute before max time
-        const isOneMinuteRemaining = maxTotalSeconds > 0 && totalSeconds === maxTotalSeconds - 60;
+        const isMinuteMark = totalSeconds % 60 === 0 && totalSeconds > 0;
 
-        if (isOneMinuteElapsed || isOneMinuteRemaining) {
+        if (isOneMinuteElapsed || isMinuteMark) {
             bellSound.currentTime = 0;
             bellSound.play();
         }
