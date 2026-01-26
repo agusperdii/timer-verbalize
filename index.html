@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debate Timer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Main container for the timer -->
+    <div class="timer-container">
+        <!-- Mode selection -->
+        <div class="mode-selection">
+            <button id="timer-mode-btn" class="mode-btn active">Timer</button>
+            <button id="stopwatch-mode-btn" class="mode-btn">Stopwatch</button>
+        </div>
+
+        <!-- Timer display -->
+        <div class="timer-display" id="timer-display">8:00</div>
+        
+        <!-- Timer controls -->
+        <div class="controls">
+            <button id="start-btn">Start</button>
+            <button id="pause-btn">Pause</button>
+            <button id="reset-btn">Reset</button>
+        </div>
+        
+        <!-- Input for setting custom time -->
+        <div class="time-input" id="time-input">
+            <label for="minutes" id="minutes-label">Set Minutes:</label>
+            <input type="number" id="minutes" value="8" min="0">
+            <label for="seconds" id="seconds-label">Set Seconds:</label>
+            <input type="number" id="seconds" value="0" min="0" max="59">
+        </div>
+    </div>
+    
+    <!-- Audio element for the bell sound -->
+    <audio id="bell-sound" src="teng.mp3"></audio>
+    
+    <!-- Link to the JavaScript file -->
+    <script src="script.js"></script>
+</body>
+</html>
