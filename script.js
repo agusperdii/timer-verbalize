@@ -11,12 +11,37 @@ const stopwatchModeBtn = document.getElementById('stopwatch-mode-btn');
 const timeInput = document.getElementById('time-input');
 const minutesLabel = document.getElementById('minutes-label');
 const secondsLabel = document.getElementById('seconds-label');
-
+const toggleControlsBtn = document.getElementById('toggle-controls-btn');
+const timerContainer = document.querySelector('.timer-container');
 
 let interval; // To store the setInterval instance
-let totalSeconds; // To store the total seconds for the countdown/stopwatch
+let totalSeconds; // To store the current seconds for the countdown/stopwatch
+let initialTotalSeconds = 0; // Store initial time for countdown to calculate elapsed
 let isPaused = false; // To track if the timer is paused
 let currentMode = 'timer'; // 'timer' or 'stopwatch'
+let controlsHidden = false; // Track controls visibility
+
+/**
+ * Updates the background color based on elapsed seconds.
+ * @param {number} elapsedSeconds - The number of seconds passed since start.
+ */
+function updateBackgroundColor(elapsedSeconds) {
+    document.body.classList.remove('orange-bg', 'red-bg');
+
+    // 0-1 minute (0-60s): Orange
+    if (elapsedSeconds >= 0 && elapsedSeconds < 60) {
+        document.body.classList.add('orange-bg');
+    }
+    // 6-7 minutes (360-420s): Orange
+    else if (elapsedSeconds >= 360 && elapsedSeconds < 420) {
+        document.body.classList.add('orange-bg');
+    }
+    // 7+ minutes (420s+): Red
+    else if (elapsedSeconds >= 420) {
+        document.body.classList.add('red-bg');
+    }
+    // 1-6 minutes: Default (no class)
+}
 
 /**
  * Updates the timer display with the given seconds.
@@ -42,13 +67,19 @@ function startCountdown() {
 
     if (!isPaused) {
         totalSeconds = (minutes * 60) + seconds;
+        initialTotalSeconds = totalSeconds;
     }
 
     isPaused = false;
-    bellSound.play(); // Play sound at the start
+    
+    // Initial update
+    updateBackgroundColor(initialTotalSeconds - totalSeconds);
 
     interval = setInterval(() => {
         totalSeconds--;
+        
+        const elapsed = initialTotalSeconds - totalSeconds;
+        updateBackgroundColor(elapsed);
 
         if (totalSeconds < 0) {
             clearInterval(interval);
@@ -59,8 +90,9 @@ function startCountdown() {
 
         displayTime(totalSeconds);
 
-        // Play sound at the start of the last minute
-        if (totalSeconds === 60) {
+        // Ring at 1 minute elapsed (first 60 seconds) or 1 minute remaining
+        if (elapsed === 60 || totalSeconds === 60) {
+            bellSound.currentTime = 0;
             bellSound.play();
         }
     }, 1000);
@@ -78,19 +110,22 @@ function startStopwatch() {
         totalSeconds = 0;
     }
     isPaused = false;
-    bellSound.play();
+    
+    // Initial update
+    updateBackgroundColor(totalSeconds);
 
     interval = setInterval(() => {
         totalSeconds++;
         displayTime(totalSeconds);
+        updateBackgroundColor(totalSeconds);
 
-        // Ring bell at 1 minute
-        if (totalSeconds === 60) {
-            bellSound.play();
-        }
-
+        // Ring bell at 1 minute elapsed
+        const isOneMinuteElapsed = totalSeconds === 60;
         // Ring bell 1 minute before max time
-        if (maxTotalSeconds > 60 && totalSeconds === maxTotalSeconds - 60) {
+        const isOneMinuteRemaining = maxTotalSeconds > 0 && totalSeconds === maxTotalSeconds - 60;
+
+        if (isOneMinuteElapsed || isOneMinuteRemaining) {
+            bellSound.currentTime = 0;
             bellSound.play();
         }
 
@@ -110,6 +145,10 @@ function start() {
     if (interval) {
         return; // Timer is already running
     }
+
+    // Play bell sound when starting
+    bellSound.currentTime = 0;
+    bellSound.play();
 
     if (currentMode === 'timer') {
         startCountdown();
@@ -136,11 +175,13 @@ function reset() {
     clearInterval(interval);
     interval = null;
     isPaused = false;
+    document.body.classList.remove('orange-bg', 'red-bg'); // Reset background
 
     if (currentMode === 'timer') {
         const minutes = parseInt(minutesInput.value, 10) || 0;
         const seconds = parseInt(secondsInput.value, 10) || 0;
         totalSeconds = (minutes * 60) + seconds;
+        initialTotalSeconds = totalSeconds;
     } else {
         totalSeconds = 0;
     }
@@ -167,6 +208,20 @@ function setMode(mode) {
     reset();
 }
 
+/**
+ * Toggles the visibility of controls.
+ */
+function toggleControls() {
+    controlsHidden = !controlsHidden;
+    if (controlsHidden) {
+        timerContainer.classList.add('controls-hidden');
+        toggleControlsBtn.textContent = 'Show Controls';
+    } else {
+        timerContainer.classList.remove('controls-hidden');
+        toggleControlsBtn.textContent = 'Hide Controls';
+    }
+}
+
 // Event Listeners
 startBtn.addEventListener('click', start);
 pauseBtn.addEventListener('click', pause);
@@ -175,6 +230,7 @@ minutesInput.addEventListener('input', reset);
 secondsInput.addEventListener('input', reset);
 timerModeBtn.addEventListener('click', () => setMode('timer'));
 stopwatchModeBtn.addEventListener('click', () => setMode('stopwatch'));
+toggleControlsBtn.addEventListener('click', toggleControls);
 
 // Initial display setup when the page loads
 setMode('timer');

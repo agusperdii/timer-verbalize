@@ -8,16 +8,61 @@ body {
     align-items: center;
     height: 100vh;
     margin: 0;
+    transition: background-color 0.5s ease;
+}
+
+body.orange-bg {
+    background-color: #E65100; /* Dark Orange for better contrast with white text */
+}
+
+body.red-bg {
+    background-color: #B71C1C; /* Dark Red */
 }
 
 /* Container for the timer and controls */
 .timer-container {
     text-align: center;
+    position: relative; /* For absolute positioning if needed */
 }
+
+/* Classes to hide controls */
+.controls-hidden .mode-selection,
+.controls-hidden .controls,
+.controls-hidden .time-input {
+    display: none;
+}
+
+.toggle-btn {
+    background: transparent;
+    border: 1px solid #777;
+    color: #777;
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    margin-top: 2rem;
+    border-radius: 5px;
+    transition: all 0.3s;
+}
+
+.toggle-btn:hover {
+    border-color: #FFF;
+    color: #FFF;
+}
+
+.controls-hidden .toggle-btn {
+    /* When controls are hidden, maybe make the button subtle or position it differently? 
+       For now, keep it visible so they can toggle back. */
+    opacity: 0.5;
+}
+
+.controls-hidden .toggle-btn:hover {
+    opacity: 1;
+}
+
 
 /* Styling for the timer display */
 .timer-display {
-    font-size: 10rem; /* Large font size for visibility */
+    font-size: 20rem; /* Large font size for visibility */
     font-weight: bold;
     margin-bottom: 2rem;
 }
