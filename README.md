@@ -1,6 +1,6 @@
 # GEC Debate Timer
 
-A specialized web application for managing time during debate competitions.
+A specialized web application for managing time during debate competitions. Features automatic audio notifications and visual color indicators to highlight important phases throughout each session.
 
 ## Main Features
 - **Timer Mode** — Counts down from a set time to zero
